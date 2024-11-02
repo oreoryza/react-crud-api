@@ -1,6 +1,6 @@
 import React from "react";
 
-function StudentForm({ toggleModal, student, onChange, onSubmit, isEdit, error}) {
+function StudentForm({ toggleModal, student, onChange, onSubmit, isEdit}) {
   return (
     <div className="modal-overlay">
       <div className="modal-content">
@@ -15,7 +15,6 @@ function StudentForm({ toggleModal, student, onChange, onSubmit, isEdit, error})
             aria-label="Close"
           ></button>
         </div>
-        {error && <div className="alert alert-danger">{error}</div>}
         <div className="modal-body overflow-auto">
           <form className="px-2 was-validated" novalidate>
             <div className="mb-3">
