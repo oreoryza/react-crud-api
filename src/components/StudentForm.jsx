@@ -1,13 +1,14 @@
 import React from "react";
 
-function StudentForm({ toggleModal, student, onChange, onSubmit, isEdit}) {
+function StudentForm({ toggleModal, student, onChange, onSubmit, isEdit, loading }) {
   return (
     <div className="modal-overlay">
       <div className="modal-content">
         <div className="modal-header">
-          <h5 className="modal-title">
+          <h3 className="modal-title d-flex justify-content-between align-items-center">
             {isEdit ? "Edit Student" : "Add New Student"}
-          </h5>
+            {loading && <div className="loader ms-5"></div>}
+          </h3>
           <button
             onClick={toggleModal}
             type="button"
@@ -19,7 +20,7 @@ function StudentForm({ toggleModal, student, onChange, onSubmit, isEdit}) {
           <form className="px-2 was-validated" novalidate>
             <div className="mb-3">
               <label htmlFor="name" className="form-label">
-                Student Name
+                Name
               </label>
               <input
                 type="text"
@@ -146,10 +147,10 @@ function StudentForm({ toggleModal, student, onChange, onSubmit, isEdit}) {
           </form>
         </div>
         <div className="modal-footer">
-          <button onClick={onSubmit} type="submit" className="btn btn-primary">
+          <button onClick={onSubmit} type="submit" className="btn btn-primary m-3">
             {isEdit ? (
               <>
-                <i className="bi bi-pencil-square"></i> Update
+                <i className="bi bi-pencil"></i> Update
               </>
             ) : (
               <>

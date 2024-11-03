@@ -13,6 +13,7 @@ class StudentContainer extends Component {
     isDetailOpen: false,
     selectedStudent: null,
     searchTerm: "",
+    loading: false,
   };
 
   componentDidMount() {
@@ -22,17 +23,20 @@ class StudentContainer extends Component {
   fetchStudents = () => {
     get()
       .then(({ data }) => {
-        this.setState({ students: data });
+        this.setState({ students: data, loading: true });
       })
-      .catch(error => {
+      .catch((error) => {
         console.error("Error:", error);
+      })
+      .finally(() => {
+        this.setState({ loading: false });
       });
   };
 
   handleAddStudent = () => {
-    this.setState({ 
-      isModalOpen: true, 
-      isEdit: false, 
+    this.setState({
+      isModalOpen: true,
+      isEdit: false,
       currentStudent: {
         name: "",
         nim: "",
@@ -42,7 +46,7 @@ class StudentContainer extends Component {
         birthDate: "",
         address: "",
         guardian_name: "",
-      } 
+      },
     });
   };
 
@@ -55,8 +59,11 @@ class StudentContainer extends Component {
       .then(() => {
         this.fetchStudents();
       })
-      .catch(error => {
+      .catch((error) => {
         console.error("Error:", error);
+      })
+      .finally(() => {
+        alert("Student deleted successfully");
       });
   };
 
@@ -64,30 +71,61 @@ class StudentContainer extends Component {
     detail(id)
       .then((response) => {
         this.setState({
-          selectedStudent: response,
+          selectedStudent: response, //Menggunakan selected student untuk menyimpan data student yang dipilih
           isDetailOpen: true,
+          loading: true,
         });
       })
-      .catch(error => {
+      .catch((error) => {
         console.error("Error:", error);
+      })
+      .finally(() => {
+        this.setState({ loading: false });
       });
   };
 
   handleChange = (e) => {
     const { name, value } = e.target;
-    
-    this.setState((prevState) => ({
-      currentStudent: {
-        ...prevState.currentStudent,
-        [name]: value
+
+    this.setState(
+      (prevState) => ({
+        currentStudent: {
+          ...prevState.currentStudent,
+          [name]: value,
+        },
+      }),
+      () => {
+        if (name === "nim") {
+          const isDuplicate = this.checkNIM(value);
+          const nimInput = document.getElementById("nim");
+          if (isDuplicate) {
+            nimInput.setCustomValidity("Must be unique.");
+          } else {
+            nimInput.setCustomValidity("");
+          }
+        }
       }
-    }));
+    );
+  };
+
+  //validasi untuk unique nim
+  checkNIM = (nim) => {
+    const { students, currentStudent, isEdit } = this.state;
+
+    if (isEdit) {
+      return students.some(
+        (student) => student.nim === nim && student.id !== currentStudent.id
+      );
+    }
+    return students.some((student) => student.nim === nim);
   };
 
   handleSubmit = () => {
     const { currentStudent, isEdit } = this.state;
-    
-    const apiCall = isEdit 
+
+    this.setState({ loading: true });
+
+    const apiCall = isEdit
       ? update(currentStudent, currentStudent.id)
       : post(currentStudent);
 
@@ -96,8 +134,11 @@ class StudentContainer extends Component {
         this.fetchStudents();
         this.setState({ isModalOpen: false });
       })
-      .catch(error => {
+      .catch((error) => {
         console.error("Error:", error);
+      })
+      .finally(() => {
+        this.setState({ loading: false });
       });
   };
 
@@ -114,24 +155,26 @@ class StudentContainer extends Component {
   };
 
   filterStudents = () => {
-    const {students, searchTerm} = this.state;
-    
-    return students.filter((student) => 
-    student.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    student.nim.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    student.class.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    student.year.toString().includes(searchTerm)
-  );
-  }
+    const { students, searchTerm } = this.state;
+
+    return students.filter(
+      (student) =>
+        student.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        student.nim.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        student.class.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        student.year.toString().includes(searchTerm)
+    );
+  };
 
   render() {
-    const {  
-      currentStudent, 
-      isModalOpen, 
-      isEdit, 
-      isDetailOpen, 
+    const {
+      currentStudent,
+      isModalOpen,
+      isEdit,
+      isDetailOpen,
       selectedStudent,
-      searchTerm
+      searchTerm,
+      loading
     } = this.state;
 
     return (
@@ -144,6 +187,7 @@ class StudentContainer extends Component {
           onInfo={this.handleInfoStudent}
           onSearch={this.handleSearch}
           searchTerm={searchTerm}
+          loading={loading}
         />
         {isModalOpen && (
           <StudentForm
@@ -152,6 +196,7 @@ class StudentContainer extends Component {
             onChange={this.handleChange}
             onSubmit={this.handleSubmit}
             isEdit={isEdit}
+            loading={loading}
           />
         )}
         {isDetailOpen && (
